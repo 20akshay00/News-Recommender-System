@@ -93,6 +93,10 @@ def logout_page():
   flash("You have been logged out!", category='info')
   return redirect(url_for("home_page"))
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+    
 # ------------Experimental----------------
 @app.route('/timings',methods=['GET','POST'])
 def hello2():
