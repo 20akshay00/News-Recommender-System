@@ -42,7 +42,11 @@ def articles_page(pg):
 @app.route('/articles/<id>')
 def display_article(id):
   items=Item.query.all()
-  return render_template('page.html', item = items[int(id)])
+
+  if(id.isdigit() and int(id) < len(items)):
+    return render_template('page.html', item = items[int(id)])
+  else:
+    return render_template('404.html'), 404
 
 @app.route('/recommender_system')
 def recommender_page():
