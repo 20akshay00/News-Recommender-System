@@ -32,12 +32,13 @@ def time_this(func):
 def home_page(): 
   return render_template('home.html')
 
-@app.route('/articles')
+@app.route('/articles/pg/<pg>')
 @login_required
-def articles_page():
+def articles_page(pg):
   items=Item.query.all()
-  return render_template('articles.html',items=items)
+  return render_template('articles.html',items=items, pg = int(pg))
  
+@time_this
 @app.route('/articles/<id>')
 def display_article(id):
   items=Item.query.all()
