@@ -4,6 +4,9 @@ from database_utils import insert_data
 import requests, os, sqlite3
 from datetime import datetime
 
+# sets proxy
+os.environ["https_proxy"] = "http://172.16.2.250:3128"
+
 def scrape_from_page(url, category, website):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
