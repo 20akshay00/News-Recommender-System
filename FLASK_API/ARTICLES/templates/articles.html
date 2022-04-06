@@ -6,6 +6,11 @@
 
 {% block content %}
     {% if pg <= (items|length // 10) and pg >= 1%}
+        <br>
+        <h1 class="h3 mb-3 font-weight-normal text-center">
+            News Feed
+        </h1>
+        <br>
         <table class="table table-hover table-dark">
             <thead>
                 <tr>
@@ -24,7 +29,7 @@
                             <td>{{ item.headline }}</td>
                             <td>{{ item.summary }}</td>
                             <td>{{ item.date }}</td>
-                            <td>{{ item.category }}</td>
+                            <td>{{ item.category.capitalize() }}</td>
                             <td>
                                 <a class ="btn btn-sm btn-primary" href="../{{ item.article_id }}">Read More</a>
                             </td>

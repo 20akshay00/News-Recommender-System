@@ -13,7 +13,13 @@
     </div>
 </div> -->
 
-    <h1>{{ item.headline }}</h1>
     <br>
-    <p>{{ item.content }}</p>
+    <h1 class = "text-center">{{ item.headline }}</h1>
+
+    <p class = "p-5">{{ item.content }}</p>
+    <div class="checkbox ab-3 text-center">
+        <a class ="btn btn-sm btn-secondary" href="{{ item.url }}">Go to article source</a>
+    </div>
+    <!-- <div class="border-top my-3"></div> -->
+    <!-- <h5 class = "text-left pl-5">Recommended articles</h5> -->
 {% endblock %}
