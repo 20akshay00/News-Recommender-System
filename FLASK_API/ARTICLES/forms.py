@@ -1,7 +1,6 @@
 from ast import Pass
 from django.forms import ValidationError
 from flask_wtf import FlaskForm
-from sympy import Le
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import Length, EqualTo, Email, DataRequired, ValidationError
 from ARTICLES.models import User

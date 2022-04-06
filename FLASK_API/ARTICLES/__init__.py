@@ -4,7 +4,7 @@ from flask_login import LoginManager
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///articles.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///news-db.db'
 
 app.config['SECRET_KEY'] = '894a198b6633d0974e266367'
 # URI = Uniform Resource Identifier
