@@ -62,7 +62,7 @@ def register_page():
 
     login_user(user_to_create)
     flash(f"Account created successfully! You are now logged in as: {user_to_create.username}", category='success')
-    return redirect(url_for('articles_page'))
+    return redirect(url_for('articles_page', pg = 1))
 
   if form.errors!={}: # This means that if there are no errors in validators
     for err_msg in form.errors.values():
@@ -81,7 +81,7 @@ def login_page():
       
       login_user(attempted_user)
       flash(f"Success! You are logged in as: {attempted_user.username}", category='success')
-      return redirect(url_for('articles_page'))
+      return redirect(url_for('articles_page', pg = 1))
     else:
       flash(f"Username and password do not match! Please try again", category='danger')      
   return render_template('login.html', form=form)

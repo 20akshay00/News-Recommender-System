@@ -11,32 +11,55 @@
     <div class="container">
         <form method="POST" class="form-register" styles="color:white">
             {{ form.hidden_tag() }}
-
-            <img class="mb-4" src="https://i.pinimg.com/236x/c4/69/0f/c4690fd6159e1a17b428a8b13e160e22.jpg">
+            <br>
+            <img class="mb-4 rounded" src="https://i.pinimg.com/236x/c4/69/0f/c4690fd6159e1a17b428a8b13e160e22.jpg">
             <h1 class="h3 mb-3 font-weight-normal">
-                Please Create your account
+                Create an account!
             </h1>
             <br>
+            <div class="row justify-content-md-center">
+                <div class="col-md-2 text-left">
+                    {{ form.username.label() }}
+                </div>
+                <div class="col-md-auto">
+                    {{ form.username(class="form-control", placeholder="User Name") }}
+                </div>
+            </div>
+            <br>
+            <div class="row justify-content-md-center">
+                <div class="col-md-2 text-left">
+                    {{ form.email_address.label() }}
+                </div>
+                <div class="col-md-auto">
+                    {{ form.email_address(class="form-control", placeholder="Email Address") }}
+                </div>
+            </div>
+            <br>
+            <div class="row justify-content-md-center">
+                <div class="col-md-2 text-left">
+                    {{ form.password1.label() }}
+                </div>
+                <div class="col-md-auto">
+                    {{ form.password1(class="form-control", placeholder="Password") }}
+                </div>
+            </div>
+            <br>
+            <div class="row justify-content-md-center">
+                <div class="col-md-2 text-left">
+                    {{ form.password2.label() }}
+                </div>
+                <div class="col-md-auto">
+                    {{ form.password2(class="form-control", placeholder="Confirm Password") }}
+                </div>
+            </div>
+            <br><br>
 
-            {{ form.username.label() }}
-            {{ form.username(class="form-control", placeholder="User Name") }}
-
-            {{ form.email_address.label() }}
-            {{ form.email_address(class="form-control", placeholder="Email Address") }}
-
-            {{ form.password1.label() }}
-            {{ form.password1(class="form-control", placeholder="Password") }}
-
-            {{ form.password2.label() }}
-            {{ form.password2(class="form-control", placeholder="Confirm Password") }}
-
-
-            {{ form.submit(class="btn btn-lg btn-block btn-primary") }}
+            {{ form.submit(class="btn btn-lg btn-primary") }}
             
             <br>
 
-            <div class="checkbox ab-3">
-                <h6> Already have an account </h6>
+            <div class="checkbox ab-3 text-right">
+                <h6> Already have an account? </h6>
                 <a class ="btn btn-sm btn-secondary" href="{{ url_for('login_page') }}">Login</a>
             </div>
 
