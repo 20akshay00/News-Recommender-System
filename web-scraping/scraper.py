@@ -25,7 +25,7 @@ def scrape_from_page(url, category, website):
         summary = soup.find("h2", class_ = "a_st").get_text()
         content = " ".join([elt.text for elt in soup.find_all("p")])[:-62]
 
-    elif(website == "IndiaTimes"):
+    elif(website == "IndiaToday"):
         if(soup.find("h1", itemprop = "headline") is None): return []
 
         title = soup.find("h1", itemprop = "headline").get_text()
@@ -47,7 +47,7 @@ def get_topic_pages(page, website):
         urls_incomplete = urls_1 + urls_2
         urls = [('https://english.elpais.com' + urls_incomplete[i]) for i in range(len(urls_incomplete))]
 
-    elif(website == "IndiaTimes"):
+    elif(website == "IndiaToday"):
         urls = ["https://www.indiatoday.in" + elt.find("a")["href"] for elt in soup.find_all("div", {"class" : "catagory-listing"})]
 
     return urls
@@ -57,7 +57,7 @@ def scrape(page_no, topic, website):
     
     if(website == "IBTimes"): URL = f"https://www.ibtimes.co.in/{topic}/page/{page_no}"
     elif(website == "ElPais"): URL = f"https://english.elpais.com/{topic}/{page_no}"
-    elif(website == "IndiaTimes"): URL = f"https://www.indiatoday.in/{topic}?page={page_no}"
+    elif(website == "IndiaToday"): URL = f"https://www.indiatoday.in/{topic}?page={page_no}"
     else: quit()
 
     url_list = get_topic_pages(requests.get(URL), website)
@@ -79,7 +79,7 @@ def scrape_loop(website, start_pg, end_pg, topic, alert = False):
     
     return data
 
-dt = scrape_loop("IBTimes", 2, 52, "business", True)
+dt = scrape_loop("IndiaToday", 1, 16, "world", True)
 
 #-----------------------------------------
 db_name = "news-db.sqlite"
