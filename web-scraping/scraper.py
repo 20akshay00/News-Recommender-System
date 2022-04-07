@@ -13,7 +13,7 @@ def scrape_from_page(url, category, website):
 
     if(website == "IBTimes"):
         title = soup.find("header", {"class" : "article-title"}).find("h1").get_text()
-        content = " ".join([elt.get_text() for elt in soup.find("div", {"id" : "article_content"}).find_all("p")])
+        content = "\n".join([elt.get_text() for elt in soup.find("div", {"id" : "article_content"}).find_all("p")])
         summary = soup.find("h2", {"class" : "subline"}).get_text()
         date = soup.time.attrs['datetime'][:10] if not(soup.time is None) else None
     
@@ -23,7 +23,7 @@ def scrape_from_page(url, category, website):
         title = soup.find("h1", class_ = "a_t").get_text()
         date = soup.find("a", id = "article_date_p").attrs['data-date'][:10] if not (soup.find("a", id = "article_date_p") is None) else None
         summary = soup.find("h2", class_ = "a_st").get_text()
-        content = " ".join([elt.text for elt in soup.find_all("p")])[:-62]
+        content = "\n".join([elt.text for elt in soup.find_all("p")])[:-62]
 
     elif(website == "IndiaToday"):
         if(soup.find("h1", itemprop = "headline") is None): return []
@@ -31,8 +31,14 @@ def scrape_from_page(url, category, website):
         title = soup.find("h1", itemprop = "headline").get_text()
         date = datetime.strftime(datetime.strptime(soup.find("dt", class_ = "pubdata").get_text(), '%B %d, %Y'), "%Y-%m-%d")
         summary = soup.find("h2").get_text()
-        content = " ".join([elt.get_text() for elt in soup.find("div", {"class" : "story-section"}).find_all("p")])
+        content = "\n".join([elt.get_text() for elt in soup.find("div", {"class" : "story-section"}).find_all("p")])
 
+    elif(website == "RepublicWorld"):
+        title = soup.find("h1", {"class" : "story-title"}).get_text()
+        date = soup.time.attrs['datetime'][:10]
+        summary = soup.find("h2", {"class" : "story-description"}).get_text()
+        content = "\n".join([elt.text for elt in soup.find("div", {"class" : "story-container"}).find_all("p") if not ("READ:" in elt.text)])
+            
     return [title, date, url, category, summary, content]
 
 def get_topic_pages(page, website):
@@ -50,6 +56,9 @@ def get_topic_pages(page, website):
     elif(website == "IndiaToday"):
         urls = ["https://www.indiatoday.in" + elt.find("a")["href"] for elt in soup.find_all("div", {"class" : "catagory-listing"})]
 
+    elif(website == "RepublicWorld"):
+        urls = [elt.find("a")["href"] for elt in soup.find_all("article", {"class" : "channel-card"})]
+      
     return urls
 
 def scrape(page_no, topic, website):
@@ -58,6 +67,7 @@ def scrape(page_no, topic, website):
     if(website == "IBTimes"): URL = f"https://www.ibtimes.co.in/{topic}/page/{page_no}"
     elif(website == "ElPais"): URL = f"https://english.elpais.com/{topic}/{page_no}"
     elif(website == "IndiaToday"): URL = f"https://www.indiatoday.in/{topic}?page={page_no}"
+    elif(website == "RepublicWorld"): URL = f"https://www.republicworld.com/business-news/{topic}/{page_no}"
     else: quit()
 
     url_list = get_topic_pages(requests.get(URL), website)
@@ -79,10 +89,10 @@ def scrape_loop(website, start_pg, end_pg, topic, alert = False):
     
     return data
 
-dt = scrape_loop("IndiaToday", 1, 16, "world", True)
+dt = scrape_loop("RepublicWorld", 1, 39, "international-business", True)
 
 #-----------------------------------------
-db_name = "news-db.sqlite"
+db_name = "news-db2.sqlite"
 tb_name = "articles"
 
 insert = f"""
@@ -94,3 +104,27 @@ insert = f"""
 conn = sqlite3.connect(db_name)
 insert_data(conn, insert, dt)
 conn.close()
+
+#Disclaimer
+#IndiaToday: Only 1-15 pages!!
+#Categories: India, Business, World, Science
+#12 articles per page
+
+# 180 + 180 + 180 + 180 = 720 articles in all
+
+#ElPais: 
+#Categories: science-tech (1-10), sports (1-7), culture (1-20), economy-and-business (1-42)
+#27 articles per page
+
+# 270 + 189 + 540 + 1134 = 2133
+
+#IBTimes: pages go on till atleast 500;
+#Categories: Science, Business, Entertainment, Sports, Technology
+#15 articles per page
+#scrape 30 pages
+# 450 + 450 + 450 + 450 + 450 = 2250
+
+#RepublicWorld: pages go on till 200 or so
+#Categories: technology-news/science, /entertainment-news/bollywood-news/, business-news/international-business
+#12 articles per page
+#scrape 38 pages
