@@ -44,7 +44,7 @@ def display_article(id):
   items=Item.query.all()
 
   if(id.isdigit() and int(id) < len(items)):
-    return render_template('page.html', item = items[int(id)])
+    return render_template('page.html', item = items[int(id) - 1])
   else:
     return render_template('404.html'), 404
 

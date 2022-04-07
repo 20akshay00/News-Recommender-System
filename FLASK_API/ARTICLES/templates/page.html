@@ -15,8 +15,10 @@
 
     <br>
     <h1 class = "text-center">{{ item.headline }}</h1>
-
-    <p class = "p-5">{{ item.content }}</p>
+    <br>
+    {% for para in item.content.split('\n') %}
+        <p class = "pl-5 pr-5 pt-1">{{ para }}</p>
+    {% endfor %}
     <div class="checkbox ab-3 text-center">
         <a class ="btn btn-sm btn-secondary" href="{{ item.url }}">Go to article source</a>
     </div>
