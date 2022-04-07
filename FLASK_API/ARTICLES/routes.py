@@ -1,21 +1,30 @@
 from ARTICLES import app
-from flask import render_template, redirect, url_for, flash, Response, g
-from ARTICLES.models import Item,User
+from flask import render_template, redirect, url_for, flash, Response, g, session
+from flask_session import Session
+from ARTICLES.models import Item,User 
 
 from ARTICLES.forms import RegisterForm, LoginForm
 from ARTICLES import db
 from flask_login import login_user, logout_user, login_required
 import time
 
+
+
+app.config['SESSION_TYPE'] = 'sqlalchemy'
+app.config['SESSION_SQLALCHEMY'] = db
+
+sess = Session(app)
+#sess.init_app(app)
+
 # ------------Experimental----------------
 
-@app.before_request
+@app.before_request 
 def before_request_func():
     g.timings = {}
 
 
 from functools import wraps
-def time_this(func):
+def time_this(func):   
     @wraps(func)
     def wrapper(*args, **kwargs):
         start = time.time()
@@ -26,6 +35,19 @@ def time_this(func):
     return wrapper
 
 # ------------Experimental----------------
+
+
+#-------------Sessions--------------------
+
+
+@app.route('/set/<user>')
+def set_session():
+  session['value'] = User.username
+  return f'The value you set is :{ User.username }'
+
+#-------------Sessions--------------------
+
+
 
 @app.route('/')  # Decorator 
 @app.route('/home')
