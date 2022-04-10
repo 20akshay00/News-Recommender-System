@@ -36,7 +36,7 @@ def home_page():
 @login_required
 def articles_page(pg):
   items=Item.query.all()
-  return render_template('articles.html',items=items, pg = int(pg))
+  return render_template('news_feed.html',items=items, pg = int(pg))
  
 @time_this
 @app.route('/articles/<id>')
@@ -51,7 +51,7 @@ def display_article(id):
         article_id = int(id)))  
     db.session.commit()
 
-    return render_template('page.html', item = items[int(id) - 1])
+    return render_template('article.html', item = items[int(id) - 1])
   else:
     return render_template('404.html'), 404
 
