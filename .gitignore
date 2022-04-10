@@ -1,4 +1,4 @@
 /web-scraping/ipynb_checkpoints
 /web-scraping/__pycache__
 /envs
-*.sqlite
+/web-scraping/news-db.sqlite
