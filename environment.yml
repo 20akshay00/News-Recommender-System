@@ -1,4 +1,4 @@
-name: C:\Users\saksh\Documents\code-repo\Projects\News-Recommender-System\envs
+name: news_env
 channels:
   - conda-forge
   - anaconda
