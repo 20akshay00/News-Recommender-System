@@ -1,2 +1,4 @@
-./web-scraping/ipynb_checkpoints
-./web-scraping/__pycache__
+/web-scraping/ipynb_checkpoints
+/web-scraping/__pycache__
+/envs
+*.sqlite
