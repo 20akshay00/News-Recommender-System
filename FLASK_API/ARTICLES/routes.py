@@ -78,7 +78,8 @@ def register_page():
         session_id = 0, 
         user_id = current_user.id, 
         article_id = None))
-
+    db.session.commit()
+    
     flash(f"Account created successfully! You are now logged in as: {user_to_create.username}", category='success')
     return redirect(url_for('articles_page', pg = 1))
 
@@ -103,7 +104,7 @@ def login_page():
         session_id = SessionLog.query.filter_by(user_id = current_user.id)[-1].session_id + 1, 
         user_id = current_user.id, 
         article_id = None))
-      db.commit()
+      db.session.commit()
 
       flash(f"Success! You are logged in as: {attempted_user.username}", category='success')
       return redirect(url_for('articles_page', pg = 1))
