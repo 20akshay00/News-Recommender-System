@@ -1,10 +1,10 @@
 from ARTICLES import app
 from flask import render_template, redirect, url_for, flash, Response, g
-from ARTICLES.models import Item,User
+from ARTICLES.models import Item, User, SessionLog
 
 from ARTICLES.forms import RegisterForm, LoginForm
 from ARTICLES import db
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 import time
 
 # ------------Experimental----------------
@@ -44,6 +44,13 @@ def display_article(id):
   items=Item.query.all()
 
   if(id.isdigit() and int(id) < len(items)):
+    db.session.add(
+      SessionLog(
+        session_id = SessionLog.query.filter_by(user_id = current_user.id)[-1].session_id, 
+        user_id = current_user.id, 
+        article_id = int(id)))  
+    db.session.commit()
+
     return render_template('page.html', item = items[int(id) - 1])
   else:
     return render_template('404.html'), 404
@@ -65,6 +72,13 @@ def register_page():
     db.session.commit()
 
     login_user(user_to_create)
+
+    db.session.add(
+      SessionLog(
+        session_id = 0, 
+        user_id = current_user.id, 
+        article_id = None))
+
     flash(f"Account created successfully! You are now logged in as: {user_to_create.username}", category='success')
     return redirect(url_for('articles_page', pg = 1))
 
@@ -84,6 +98,13 @@ def login_page():
     if attempted_user and attempted_password:
       
       login_user(attempted_user)
+      db.session.add(
+      SessionLog(
+        session_id = SessionLog.query.filter_by(user_id = current_user.id)[-1].session_id + 1, 
+        user_id = current_user.id, 
+        article_id = None))
+      db.commit()
+
       flash(f"Success! You are logged in as: {attempted_user.username}", category='success')
       return redirect(url_for('articles_page', pg = 1))
     else:
