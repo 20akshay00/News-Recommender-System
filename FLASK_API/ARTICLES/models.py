@@ -13,6 +13,13 @@ class User(db.Model, UserMixin):
     email_address = db.Column(db.String(length=50),nullable=False,unique=True)
     password_hash = db.Column(db.String(length=60),nullable=False)
 
+class SessionLog(db.Model):
+    __tablename__ = 'session_log'
+    log_id        = db.Column(db.Integer(), primary_key=True)
+    session_id    = db.Column(db.Integer())
+    user_id       = db.Column(db.Integer())
+    article_id    = db.Column(db.Integer())
+    
 class Item(db.Model):
     __tablename__ = 'articles'
     article_id = db.Column(db.Integer(), primary_key=True)
