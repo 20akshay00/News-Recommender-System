@@ -12,16 +12,40 @@
         <p class="lead font-weight-normal">{{ item.content }}</p>
     </div>
 </div> -->
-
     <br>
     <h1 class = "text-center">{{ item.headline }}</h1>
     <br>
     {% for para in item.content.split('\n') %}
         <p class = "pl-5 pr-5 pt-1">{{ para }}</p>
     {% endfor %}
-    <div class="checkbox ab-3 text-center">
-        <a class ="btn btn-sm btn-secondary" href="{{ item.url }}">Go to article source</a>
+    <br>
+    <div class = "container">
+        <div class = "row text-left">
+        <div class="checkbox ab-3 text-left col">
+            <a class ="btn btn-sm btn-dark" href="{{ item.url }}">Go to article source</a>
+        </div>
+    
+        <i id="like" class="fas fa-thumbs-up btn btn-circle btn-primary btn-light mx-2 col-md-auto" onclick="like()"></i>
+        <i id="neutral" class="fas fa-ellipsis-h btn btn-circle btn-primary btn-light mx-2 col-md-auto" onclick="neutral()"></i> 
+        <i id="dislike" class="fas fa-thumbs-down btn btn-circle btn-primary btn-light mx-2 col-md-auto" onclick="dislike()"></i>
     </div>
-    <!-- <div class="border-top my-3"></div> -->
-    <!-- <h5 class = "text-left pl-5">Recommended articles</h5> -->
+    </div>
+
+    <div class="border-top my-3"></div>
+    <h5 class = "text-left pl-4">If you liked this article, you might also like:</h5>
+    <ul >
+        {% for article in similar_articles %}
+        <li> <a class = "link-light" href = {{ "/articles/" + article.article_id|string }} >{{ article.headline }}</a></li>
+        {% endfor %}
+    </ul>   
+    <div class="border-top my-3"></div>
+    {% if recommended_articles[0] != None %}
+    <h5 class = "text-left pl-4">Check out these articles, selected just for you:</h5>
+    <ul >
+        {% for article in recommended_articles %}
+        <li> <a class = "link-light" href = {{ "/articles/" + article.article_id|string }} >{{ article.headline }}</a></li>
+        {% endfor %}
+    </ul>   
+    <div class="border-top my-3"></div>
+    {% endif %}
 {% endblock %}

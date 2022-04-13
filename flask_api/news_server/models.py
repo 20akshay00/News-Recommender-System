@@ -19,7 +19,7 @@ class SessionLog(db.Model):
     user_id       = db.Column(db.Integer())
     article_id    = db.Column(db.Integer())
     
-class Item(db.Model):
+class RawArticle(db.Model):
     __tablename__ = 'articles'
     article_id = db.Column(db.Integer(), primary_key=True)
     headline = db.Column(db.String(length=100), nullable=False, unique=True)

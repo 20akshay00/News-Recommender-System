@@ -1,31 +1,18 @@
+from requests import Session
 from news_server import app
-from flask import render_template, redirect, url_for, flash, Response, g
-from news_server.models import Item, User, SessionLog
+from flask import render_template, redirect, url_for, flash, Response, g, request, jsonify
+from news_server.models import RawArticle, User, SessionLog
 
 from news_server.forms import RegisterForm, LoginForm
 from news_server import db
 from flask_login import login_user, logout_user, login_required, current_user
-import time
+from news_server.recommender import get_user_vector, content_based_recommend
+import numpy as np
 
-# ------------Experimental----------------
+from news_server.recommender import LSA
 
-@app.before_request
-def before_request_func():
-    g.timings = {}
-
-
-from functools import wraps
-def time_this(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        r = func(*args, **kwargs)
-        end = time.time()
-        g.timings[func._name_] = end - start
-        return r
-    return wrapper
-
-# ------------Experimental----------------
+corpus = db.session.execute("SELECT content from articles_processed")
+corpus = LSA([elt[0] for elt in list(corpus) if not(elt[0] is None)], 25)
 
 @app.route('/')  # Decorator 
 @app.route('/home')
@@ -35,25 +22,45 @@ def home_page():
 @app.route('/articles/pg/<pg>')
 @login_required
 def articles_page(pg):
-  items=Item.query.all()
+  items = RawArticle.query.all()
   return render_template('news_feed.html',items=items, pg = int(pg))
  
-@time_this
 @app.route('/articles/<id>')
 def display_article(id):
-  items=Item.query.all()
+  items = RawArticle.query.all()
+
+  article_history = SessionLog.query.with_entities(SessionLog.article_id).filter_by(user_id = current_user.id)
+  article_history = np.array([elt[0] for elt in list(article_history) if not(elt[0] is None)])
+  if(len(article_history) >= 5):
+    user = get_user_vector(corpus[article_history])
+    recommended_ids = content_based_recommend(corpus, user, 5)
+  else:
+    recommended_ids = -1
+  
+  similar_ids = content_based_recommend(corpus, corpus[int(id) - 1].reshape(1, -1), 5)
 
   if(id.isdigit() and int(id) < len(items)):
+
     db.session.add(
       SessionLog(
         session_id = SessionLog.query.filter_by(user_id = current_user.id)[-1].session_id, 
         user_id = current_user.id, 
         article_id = int(id)))  
-    db.session.commit()
 
-    return render_template('article.html', item = items[int(id) - 1])
+    db.session.commit()
+    
+    return render_template(
+      'article.html', 
+      item = items[int(id) - 1], 
+      recommended_articles = [items[elt] for elt in recommended_ids] if isinstance(recommended_ids, np.ndarray) else [None],
+      similar_articles = [items[elt] for elt in similar_ids])
   else:
     return render_template('404.html'), 404
+
+# @app.route("/handleClick")
+# def handleClick():
+#   app.logger.info("Click registered")
+#   return ('', 202)
 
 @app.route('/recommender_system')
 def recommender_page():
@@ -123,9 +130,3 @@ def logout_page():
 def page_not_found(e):
     return render_template('404.html'), 404
     
-# ------------Experimental----------------
-@app.route('/timings',methods=['GET','POST'])
-def hello2():
-    articles_page()
-    return Response('Hello World: ' + str(g.timings), mimetype='text/plain')
-# ------------Experimental----------------
