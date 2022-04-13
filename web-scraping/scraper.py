@@ -92,7 +92,7 @@ def scrape_loop(website, start_pg, end_pg, topic, alert = False):
 dt = scrape_loop("RepublicWorld", 1, 39, "international-business", True)
 
 #-----------------------------------------
-db_name = "news-db2.sqlite"
+db_name = "news-db.sqlite"
 tb_name = "articles"
 
 insert = f"""
