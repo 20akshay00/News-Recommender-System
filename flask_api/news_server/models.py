@@ -18,7 +18,9 @@ class SessionLog(db.Model):
     session_id    = db.Column(db.Integer())
     user_id       = db.Column(db.Integer())
     article_id    = db.Column(db.Integer())
-    
+    time_spent    = db.Column(db.Float())
+    rating        = db.Column(db.Integer())
+
 class RawArticle(db.Model):
     __tablename__ = 'articles'
     article_id = db.Column(db.Integer(), primary_key=True)

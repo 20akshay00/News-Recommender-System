@@ -13,6 +13,7 @@ from news_server.recommender import LSA
 
 corpus = db.session.execute("SELECT content from articles_processed")
 corpus = LSA([elt[0] for elt in list(corpus) if not(elt[0] is None)], 25)
+corpus = corpus / np.linalg.norm(corpus, axis = 1)[:,None]
 
 @app.route('/')  # Decorator 
 @app.route('/home')
@@ -48,19 +49,18 @@ def display_article(id):
         article_id = int(id)))  
 
     db.session.commit()
+
+    log_id = SessionLog.query.order_by(-SessionLog.log_id).first().log_id
     
     return render_template(
-      'article.html', 
+      'article.html',
+      id = int(id) - 1, 
+      log_id = log_id,
       item = items[int(id) - 1], 
       recommended_articles = [items[elt] for elt in recommended_ids] if isinstance(recommended_ids, np.ndarray) else [None],
       similar_articles = [items[elt] for elt in similar_ids])
   else:
     return render_template('404.html'), 404
-
-# @app.route("/handleClick")
-# def handleClick():
-#   app.logger.info("Click registered")
-#   return ('', 202)
 
 @app.route('/recommender_system')
 def recommender_page():
@@ -85,6 +85,7 @@ def register_page():
         session_id = 0, 
         user_id = current_user.id, 
         article_id = None))
+
     db.session.commit()
     
     flash(f"Account created successfully! You are now logged in as: {user_to_create.username}", category='success')
@@ -130,3 +131,10 @@ def logout_page():
 def page_not_found(e):
     return render_template('404.html'), 404
     
+@app.route("/analytics", methods=["GET", "POST"])
+def analytics():
+    data = request.data.decode("utf-8").split(",")
+    article_id, log_id, time_spent, rating = int(data[0]), int(data[1]), float(data[2]), int(data[3])
+    db.session.execute(f"UPDATE session_log SET time_spent = {time_spent}, rating = {rating} WHERE log_id = {log_id}")
+    db.session.commit()
+    return ('', 204)

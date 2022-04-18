@@ -86,54 +86,6 @@
       <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
       <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
-      {% block scripts %}            
-      <script type="text/javascript">
-          let startDate = new Date();
-          let elapsedTime = 0;
-  
-          const load = function() {
-              startDate = new Date();
-          };
-
-          const beforeunload = function() {
-              const endDate = new Date();
-              const spentTime = endDate.getTime() - startDate.getTime();
-              elapsedTime += spentTime;
-              console.log(elapsedTime)
-          };
-  
-          window.addEventListener('load', load);
-          window.addEventListener('unload', beforeunload);
-
-    function like(){
-        $('#dislike').removeClass('disabled');
-        $('#dislike').attr("data-toggle", "modal");
-        $('#neutral').removeClass('disabled');
-        $('#neutral').attr("data-toggle", "modal");
-
-        $('#like').addClass('disabled');
-        $('#like').removeAttr('data-toggle');
-    }
-    function dislike(){
-        $('#like').removeClass('disabled');
-        $('#like').attr("data-toggle", "modal");
-        $('#neutral').removeClass('disabled');
-        $('#neutral').attr("data-toggle", "modal");
-
-        $('#dislike').addClass('disabled');
-        $('#dislike').removeAttr('data-toggle');
-    }
-    function neutral(){
-        $('#like').removeClass('disabled');
-        $('#like').attr("data-toggle", "modal");
-        $('#dislike').removeClass('disabled');
-        $('#dislike').attr("data-toggle", "modal");
-
-        $('#neutral').addClass('disabled');
-        $('#dneutral').removeAttr('data-toggle');
-    }
-      </script>
-      {% endblock scripts %}
    </body>
    <style>
       body {
