@@ -16,8 +16,8 @@ def LSA(corpus, num_topics):
     lsa_mat = sv_dec_lsa.fit_transform(vectorized_corpus)
     return lsa_mat                   
 
-def get_user_vector(docs, weights = -1):
-    if(weights == -1): weights = np.ones(docs.shape[0])
+def get_user_vector(docs, weights = None):
+    if(weights is None): weights = np.ones(docs.shape[0])
     user = (weights @ docs)
     return (user / np.linalg.norm(user)).reshape(1, docs.shape[1])
 
@@ -53,7 +53,7 @@ def get_ratings_mat(corpus, user_doc_dict, user_rating_dict):
     return ratings
 
 # N is the number of recommendations, corpus is vectorized LSA
-def get_collab_recommendations(corpus, user_doc_dict, user_rating_dict, N): 
+def collab_based_recommend(corpus, user_doc_dict, user_rating_dict, N): 
     av_ratings = np.nansum(get_ratings_mat(corpus, user_doc_dict, user_rating_dict), axis = 0)
     recommend_indices = np.argpartition(av_ratings, -N)[-N:]
     return recommend_indices

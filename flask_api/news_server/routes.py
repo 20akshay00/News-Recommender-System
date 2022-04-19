@@ -6,21 +6,26 @@ from news_server.models import RawArticle, User, SessionLog
 from news_server.forms import RegisterForm, LoginForm
 from news_server import db
 from flask_login import login_user, logout_user, login_required, current_user
-from news_server.recommender import get_user_vector, content_based_recommend, LSA, get_engagement
+from news_server.recommender import get_user_vector, content_based_recommend, collab_based_recommend, LSA, get_engagement
+from random import shuffle 
 import numpy as np
 
 corpus = [elt[0] for elt in list(db.session.execute("SELECT content from articles_processed")) if not(elt[0] is None)]
 corpus_lengths = [len(doc) for doc in corpus]
 corpus = LSA(corpus, 25)
 corpus = corpus / np.linalg.norm(corpus, axis = 1)[:, None]
+num_users = len([elt[0] for elt in db.session.execute("SELECT DISTINCT user_id from session_log").fetchall()])
+articles = print(type(RawArticle.query.all()))
 
 def get_user_dicts(db, corpus_lengths):
-  user_ids = range(0, db.session.execute("SELECT MAX(user_id) from session_log").fetchall()[0][0] + 1)
-  user_data = [[elt for elt in list(db.session.execute(f"SELECT article_id, time_spent, rating FROM session_log WHERE user_id == {i} GROUP BY article_id")) if not (None in elt)] for i in user_ids]
+  user_ids = [elt[0] for elt in db.session.execute("SELECT DISTINCT user_id from session_log").fetchall()]
+  user_data = {user: [elt for elt in db.session.execute(f"SELECT article_id, time_spent, rating FROM session_log WHERE user_id == {0} AND rating IS NOT NULL GROUP BY article_id").fetchall()] for user in user_ids}
   user_doc_dict = {id:[elt[0] for elt in user_data[id]] for id in user_ids}
   user_rating_dict = {id:[get_engagement(elt[1], corpus_lengths[elt[0]], elt[2]) for elt in user_data[id]] for id in user_ids}
 
   return user_doc_dict, user_rating_dict
+
+user_doc_dict, user_rating_dict = get_user_dicts(db, corpus_lengths)
 
 @app.route('/')  # Decorator 
 @app.route('/home')
@@ -30,8 +35,7 @@ def home_page():
 @app.route('/articles/pg/<pg>')
 @login_required
 def articles_page(pg):
-  items = RawArticle.query.all()
-  return render_template('news_feed.html',items=items, pg = int(pg))
+  return render_template('news_feed.html',items=articles, pg = int(pg))
  
 @app.route('/articles/<id>')
 def display_article(id):
@@ -41,11 +45,17 @@ def display_article(id):
   article_history = np.array([elt[0] for elt in list(article_history) if not(elt[0] is None)])
   if(len(article_history) >= 5):
     user = get_user_vector(corpus[article_history])
-    recommended_ids = content_based_recommend(corpus, user, 5)
+    content_recommended_ids = content_based_recommend(corpus, user, 5)
   else:
-    recommended_ids = -1
+    content_recommended_ids = -1
   
-  similar_ids = content_based_recommend(corpus, corpus[int(id) - 1].reshape(1, -1), 5)
+  if(num_users >= 10):
+    collab_recommended_ids = collab_based_recommend(corpus, user_doc_dict, user_rating_dict, 5)
+  else: 
+    collab_recommended_ids = -1
+
+  similar_ids = content_based_recommend(corpus, corpus[int(id)].reshape(1, -1), 6)
+  similar_ids = np.delete(similar_ids, np.where(similar_ids == int(id)))
 
   if(id.isdigit() and int(id) < len(items)):
 
@@ -61,18 +71,13 @@ def display_article(id):
     
     return render_template(
       'article.html',
-      id = int(id) - 1, 
+      id = int(id), 
       log_id = log_id,
-      item = items[int(id) - 1], 
-      recommended_articles = [items[elt] for elt in recommended_ids] if isinstance(recommended_ids, np.ndarray) else [None],
+      item = items[int(id)], 
+      recommended_articles = [items[elt] for elt in content_recommended_ids] if isinstance(content_recommended_ids, np.ndarray) else [None],
       similar_articles = [items[elt] for elt in similar_ids])
   else:
     return render_template('404.html'), 404
-
-@app.route('/recommender_system')
-def recommender_page():
-  return render_template('recommender.html')
-
 
 @app.route('/register',methods=['GET','POST'])
 def register_page():
@@ -145,3 +150,7 @@ def analytics():
     db.session.execute(f"UPDATE session_log SET time_spent = {time_spent}, rating = {rating} WHERE log_id = {log_id}")
     db.session.commit()
     return ('', 204)
+
+@app.route('/preferences')
+def preferences():
+  return render_template('preferences.html')
