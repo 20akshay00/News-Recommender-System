@@ -6,14 +6,21 @@ from news_server.models import RawArticle, User, SessionLog
 from news_server.forms import RegisterForm, LoginForm
 from news_server import db
 from flask_login import login_user, logout_user, login_required, current_user
-from news_server.recommender import get_user_vector, content_based_recommend
+from news_server.recommender import get_user_vector, content_based_recommend, LSA, get_engagement
 import numpy as np
 
-from news_server.recommender import LSA
+corpus = [elt[0] for elt in list(db.session.execute("SELECT content from articles_processed")) if not(elt[0] is None)]
+corpus_lengths = [len(doc) for doc in corpus]
+corpus = LSA(corpus, 25)
+corpus = corpus / np.linalg.norm(corpus, axis = 1)[:, None]
 
-corpus = db.session.execute("SELECT content from articles_processed")
-corpus = LSA([elt[0] for elt in list(corpus) if not(elt[0] is None)], 25)
-corpus = corpus / np.linalg.norm(corpus, axis = 1)[:,None]
+def get_user_dicts(db, corpus_lengths):
+  user_ids = range(0, db.session.execute("SELECT MAX(user_id) from session_log").fetchall()[0][0] + 1)
+  user_data = [[elt for elt in list(db.session.execute(f"SELECT article_id, time_spent, rating FROM session_log WHERE user_id == {i} GROUP BY article_id")) if not (None in elt)] for i in user_ids]
+  user_doc_dict = {id:[elt[0] for elt in user_data[id]] for id in user_ids}
+  user_rating_dict = {id:[get_engagement(elt[1], corpus_lengths[elt[0]], elt[2]) for elt in user_data[id]] for id in user_ids}
+
+  return user_doc_dict, user_rating_dict
 
 @app.route('/')  # Decorator 
 @app.route('/home')
