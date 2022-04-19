@@ -85,25 +85,36 @@
               <p class="lead font-weight-normal">{{ item.content }}</p>
           </div>
       </div> -->
-          <br>
-          <h1 class = "text-center">{{ item.headline }}</h1>
-          <br>
-          {% for para in item.content.split('\n') %}
-              <p class = "pl-5 pr-5 pt-1">{{ para }}</p>
-          {% endfor %}
+
+        <div class="card bg-dark mt-3 mb-2 mx-4 border-white">
+            <div class="card-body">
+            <h3 class="card-title font-weight-bold text-center">{{ item.headline }}</h3>
+            <h6 class="card-subtitle mb-2 text-muted text-center">Published on: {{ item.date }}</h6>
+            </div>
+        </div>
+          <div class="card bg-dark my-3 mx-4 border-white">
+            <div class="card-body">
+              <div class="card-text">
+                <br>
+                {% for para in item.content.split('\n') %}
+                    <p class = "pl-3 pr-3 pt-1">{{ para }}</p>
+                {% endfor %}
+                <br>
+              </div>
+            </div>
+          </div>
           <br>
           <div class = "container">
               <div class = "row text-left">
               <div class="checkbox ab-3 text-left col">
                   <a class ="btn btn-sm btn-dark" href="{{ item.url }}">Go to article source</a>
               </div>
-          
               <i id="like" class="fas fa-thumbs-up btn btn-circle btn-primary btn-light mx-2 col-md-auto" onclick="like()"></i>
               <i id="neutral" class="fas fa-ellipsis-h btn btn-circle btn-primary btn-light mx-2 col-md-auto" onclick="neutral()"></i> 
               <i id="dislike" class="fas fa-thumbs-down btn btn-circle btn-primary btn-light mx-2 col-md-auto" onclick="dislike()"></i>
           </div>
           </div>
-      
+          <br>
           <div class="border-top my-3"></div>
           <h5 class = "text-left pl-4">If you liked this article, you might also like:</h5>
           <ul >

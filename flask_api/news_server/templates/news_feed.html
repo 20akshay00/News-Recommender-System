@@ -11,35 +11,17 @@
             News Feed
         </h1>
         <br>
-        <table class="table table-hover table-dark">
-            <thead>
-                <tr>
-                    <!-- Your Columns HERE -->
-                    <th scope="col">Headline</th>
-                    <th scope="col">Summary</th>
-                    <th scope="col">Published date</th>
-                    <th scope="col">Category</th>
-                    <th scope="col">Options</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Your rows inside the table HERE: -->
-                    {% for item in items[((pg-1)*10):(pg*10)] %}
-                        <tr>
-                            <td>{{ item.headline }}</td>
-                            <td>{{ item.summary }}</td>
-                            <td>{{ item.date }}</td>
-                            <td>{{ item.category.capitalize() }}</td>
-                            <td>
-                                <a class ="btn btn-sm btn-primary" href="../{{ item.article_id }}">Read More</a>
-                            </td>
-
-                        </tr>
-                    {% endfor %}
-                
-            </tbody>
-        </table>
-
+            {% for item in items[((pg-1)*10):(pg*10)] %}
+                    <div class="card bg-dark my-2 mx-4 border-white">
+                        <div class="card-body">
+                            <h5 class="card-title font-weight-bold">{{ item.headline }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Category: {{ item.category.capitalize() }}, Published on: {{ item.date }}</h6>
+                            <p class="card-text">{{ item.summary }}</p>
+                            <a class ="btn btn-sm btn-secondary text-center" href="../{{ item.article_id }}">Read More</a>
+                        </div>
+                        </div>
+            {% endfor %}
+        <br>
         {% if pg == 1 %}
             <nav aria-label="...">
                 <ul class="pagination justify-content-center">
