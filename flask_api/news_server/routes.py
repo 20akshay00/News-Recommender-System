@@ -10,12 +10,22 @@ from news_server.recommender import get_user_vector, content_based_recommend, co
 from random import shuffle 
 import numpy as np
 
+# query processed corpus from SQLite
 corpus = [elt[0] for elt in list(db.session.execute("SELECT content from articles_processed")) if not(elt[0] is None)]
+# note document lengths for estimating average reading time
 corpus_lengths = [len(doc) for doc in corpus]
+# extract latent topics from corpus using LSA
 corpus = LSA(corpus, 25)
+# normalize all documents to 1 using L2 norm
 corpus = corpus / np.linalg.norm(corpus, axis = 1)[:, None]
+# get number of unique users registered in the database
 num_users = len([elt[0] for elt in db.session.execute("SELECT DISTINCT user_id from session_log").fetchall()])
-articles = print(type(RawArticle.query.all()))
+# get a randomized list of all articles in the database
+articles = RawArticle.query.all(); shuffle(articles)
+
+# function to compute two dictionaries (used in collaborative filtering):
+# user_doc_dict    = {user_id: [ids of articles read]}
+# user_rating_dict = {user_id: [ratings given to the articles read]}
 
 def get_user_dicts(db, corpus_lengths):
   user_ids = [elt[0] for elt in db.session.execute("SELECT DISTINCT user_id from session_log").fetchall()]
@@ -41,19 +51,22 @@ def articles_page(pg):
 def display_article(id):
   items = RawArticle.query.all()
 
-  article_history = SessionLog.query.with_entities(SessionLog.article_id).filter_by(user_id = current_user.id)
-  article_history = np.array([elt[0] for elt in list(article_history) if not(elt[0] is None)])
-  if(len(article_history) >= 5):
-    user = get_user_vector(corpus[article_history])
+  # article_history = SessionLog.query.with_entities(SessionLog.article_id).filter_by(user_id = current_user.id)
+  # article_history = np.array([elt[0] for elt in list(article_history) if not(elt[0] is None)])
+  article_history = user_doc_dict[current_user.id]
+
+  if(len(article_history) >= 5): # only do content based recommendation if user has read atleast 5 articles
+    user = get_user_vector(corpus[article_history], user_rating_dict[current_user.id])
     content_recommended_ids = content_based_recommend(corpus, user, 5)
   else:
     content_recommended_ids = -1
   
-  if(num_users >= 10):
-    collab_recommended_ids = collab_based_recommend(corpus, user_doc_dict, user_rating_dict, 5)
+  if(num_users > 10): # only do collaborative filtering is more than 10 users are registered
+    collab_recommended_ids = collab_based_recommend(user, corpus, user_doc_dict, user_rating_dict, 5)
   else: 
     collab_recommended_ids = -1
 
+  # in any case, find 5 similar articles to the one being read by the user at the moment
   similar_ids = content_based_recommend(corpus, corpus[int(id)].reshape(1, -1), 6)
   similar_ids = np.delete(similar_ids, np.where(similar_ids == int(id)))
 
@@ -143,6 +156,7 @@ def logout_page():
 def page_not_found(e):
     return render_template('404.html'), 404
     
+# get analytics about the user's interaction with the article
 @app.route("/analytics", methods=["GET", "POST"])
 def analytics():
     data = request.data.decode("utf-8").split(",")
