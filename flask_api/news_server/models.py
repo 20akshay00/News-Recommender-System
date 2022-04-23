@@ -32,4 +32,4 @@ class RawArticle(db.Model):
     content  = db.Column(db.String(), nullable=False)
 
     def __repr__(self):
-        return f'Item {self.Heading}'
+        return f'Item {self.article_id}'

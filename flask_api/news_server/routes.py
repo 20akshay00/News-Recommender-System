@@ -27,13 +27,11 @@ num_users = len([elt[0] for elt in db.session.execute("SELECT DISTINCT user_id f
 
 def get_user_dicts(db, corpus_lengths):
   user_ids = [elt[0] for elt in db.session.execute("SELECT DISTINCT user_id from session_log").fetchall()]
-  user_data = {user: [elt for elt in db.session.execute(f"SELECT article_id, time_spent, rating FROM session_log WHERE user_id == {0} AND rating IS NOT NULL GROUP BY article_id").fetchall()] for user in user_ids}
+  user_data = {user: [elt for elt in db.session.execute(f"SELECT article_id, time_spent, rating FROM session_log WHERE user_id == {user} AND rating IS NOT NULL GROUP BY article_id").fetchall()] for user in user_ids}
   user_doc_dict = {id:[elt[0] for elt in user_data[id]] for id in user_ids}
   user_rating_dict = {id:[get_engagement(elt[1], corpus_lengths[elt[0]], elt[2]) for elt in user_data[id]] for id in user_ids}
 
   return user_doc_dict, user_rating_dict
-
-user_doc_dict, user_rating_dict = get_user_dicts(db, corpus_lengths)
 
 @app.route('/')  # Decorator 
 @app.route('/home')
@@ -44,18 +42,21 @@ def home_page():
 @login_required
 def articles_page(pg):
   categories = User.query.filter_by(id = current_user.id)[0].categories
-  if(SessionLog.query.filter_by(user_id = current_user.id)[-1].session_id <= 5 and (categories is not None)):
+  if(categories is None or categories == "None"): categories = "science-and-technology,entertainment,business,sports,india,world"
+
+  if(SessionLog.query.filter_by(user_id = current_user.id)[-1].session_id <= 5):
     items = db.session.query(RawArticle).filter(RawArticle.category.in_(categories.split(","))).all()
   else:
     items = RawArticle.query.all()
 
-    shuffle(items)
+  shuffle(items)
   return render_template('news_feed.html', items = items, pg = int(pg))
  
 @app.route('/articles/<id>')
 def display_article(id):
   items = RawArticle.query.all()
   
+  user_doc_dict, user_rating_dict = get_user_dicts(db, corpus_lengths)
   article_history = user_doc_dict[current_user.id] if(current_user.id in user_doc_dict) else []
 
   if(len(article_history) >= 5): # only do content based recommendation if user has read atleast 5 articles
@@ -155,6 +156,10 @@ def logout_page():
   flash("You have been logged out!", category='info')
   return redirect(url_for("home_page"))
 
+@app.route('/preferences')
+def preferences():
+  return render_template('preferences.html')
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
@@ -168,10 +173,7 @@ def analytics():
     db.session.commit()
     return ('', 204)
 
-@app.route('/preferences')
-def preferences():
-  return render_template('preferences.html')
-
+# get information about preferred categories to solve cold-start problem
 @app.route('/category_data', methods=["GET", "POST"])
 def category_data():
   data = request.data.decode("utf-8")

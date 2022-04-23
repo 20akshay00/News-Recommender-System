@@ -130,19 +130,24 @@
                 $('#b{{ i }}').removeAttr('data-toggle');
             }
             else{
-                categories.pop(cat_names[{{ i }}])
+                categories.splice(categories.indexOf(cat_names[{{ i }}]), 1)
                 $('#b{{ i }}').removeClass('disabled');
                 $('#b{{ i }}').attr('data-toggle', 'modal');
             }
             
             console.log(categories)
         }
-        
-        function proceed(){
-            navigator.sendBeacon("../category_data", categories)
-            location.href = './articles/pg/1';        
-        }
         {% endfor %}
+ 
+        function proceed(){
+            if(categories.length < 1){
+                window.alert("Please select atleast one category that you prefer.")
+            }
+            else{
+                navigator.sendBeacon("../category_data", categories)
+                location.href = './home'
+            }
+        }
       </script>
       {% endblock scripts %}
     </body>
