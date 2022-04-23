@@ -20,8 +20,6 @@ corpus = LSA(corpus, 25)
 corpus = corpus / np.linalg.norm(corpus, axis = 1)[:, None]
 # get number of unique users registered in the database
 num_users = len([elt[0] for elt in db.session.execute("SELECT DISTINCT user_id from session_log").fetchall()])
-# get a randomized list of all articles in the database
-articles = RawArticle.query.all(); shuffle(articles)
 
 # function to compute two dictionaries (used in collaborative filtering):
 # user_doc_dict    = {user_id: [ids of articles read]}
@@ -45,15 +43,20 @@ def home_page():
 @app.route('/articles/pg/<pg>')
 @login_required
 def articles_page(pg):
-  return render_template('news_feed.html',items=articles, pg = int(pg))
+  categories = User.query.filter_by(id = current_user.id)[0].categories
+  if(SessionLog.query.filter_by(user_id = current_user.id)[-1].session_id <= 5 and (categories is not None)):
+    items = db.session.query(RawArticle).filter(RawArticle.category.in_(categories.split(","))).all()
+  else:
+    items = RawArticle.query.all()
+
+    shuffle(items)
+  return render_template('news_feed.html', items = items, pg = int(pg))
  
 @app.route('/articles/<id>')
 def display_article(id):
   items = RawArticle.query.all()
-
-  # article_history = SessionLog.query.with_entities(SessionLog.article_id).filter_by(user_id = current_user.id)
-  # article_history = np.array([elt[0] for elt in list(article_history) if not(elt[0] is None)])
-  article_history = user_doc_dict[current_user.id]
+  
+  article_history = user_doc_dict[current_user.id] if(current_user.id in user_doc_dict) else []
 
   if(len(article_history) >= 5): # only do content based recommendation if user has read atleast 5 articles
     user = get_user_vector(corpus[article_history], user_rating_dict[current_user.id])
@@ -114,7 +117,7 @@ def register_page():
     db.session.commit()
     
     flash(f"Account created successfully! You are now logged in as: {user_to_create.username}", category='success')
-    return redirect(url_for('articles_page', pg = 1))
+    return redirect(url_for('preferences'))
 
   if form.errors!={}: # This means that if there are no errors in validators
     for err_msg in form.errors.values():
@@ -168,3 +171,13 @@ def analytics():
 @app.route('/preferences')
 def preferences():
   return render_template('preferences.html')
+
+@app.route('/category_data', methods=["GET", "POST"])
+def category_data():
+  data = request.data.decode("utf-8")
+  if(data == ""):
+    data = None
+
+  db.session.execute(f"UPDATE users SET categories = '{data}' WHERE id = {current_user.id}")
+  db.session.commit()
+  return ('', 204)

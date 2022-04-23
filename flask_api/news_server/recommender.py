@@ -37,7 +37,7 @@ def get_engagement(time, num_words, click, mean = 445, var = 60):
         amp  = np.random.uniform(0.85, 0.95)
         
         if time <= mean_t: return amp * pow(np.e, -(time - mean_t)**2/(2 * std_t**2))
-        elif (mean_t < time) and time < (mean_t + 2 * std_t): return amp
+        elif (mean_t < time) and time < (mean_t + 4 * std_t): return amp
         else: return 0
 
 # calculate ratings using explicit rating and time spent on page
