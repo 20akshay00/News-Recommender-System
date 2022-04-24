@@ -62,13 +62,15 @@ def display_article(id):
   if(len(article_history) >= 5): # only do content based recommendation if user has read atleast 5 articles
     user = get_user_vector(corpus[article_history], user_rating_dict[current_user.id])
     content_recommended_ids = content_based_recommend(corpus, user, 5)
+    
+    if(num_users > 15): # only do collaborative filtering is more than 10 users are registered
+      collab_recommended_ids = collab_based_recommend(user, corpus, user_doc_dict, user_rating_dict, 5)
+    else: 
+      collab_recommended_ids = -1
+
   else:
     content_recommended_ids = -1
   
-  if(num_users > 10): # only do collaborative filtering is more than 10 users are registered
-    collab_recommended_ids = collab_based_recommend(user, corpus, user_doc_dict, user_rating_dict, 5)
-  else: 
-    collab_recommended_ids = -1
 
   # in any case, find 5 similar articles to the one being read by the user at the moment
   similar_ids = content_based_recommend(corpus, corpus[int(id)].reshape(1, -1), 6)

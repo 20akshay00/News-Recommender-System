@@ -53,7 +53,7 @@ def get_ratings_mat(corpus, user_doc_dict, user_rating_dict, user_vec_dim):
 # N is the number of recommendations, corpus is vectorized LSA
 def collab_based_recommend(user, corpus, user_doc_dict, user_rating_dict, N): 
     # find N nearest users
-    user_vectors = np.array([get_user_vector(corpus[user_doc_dict[i]], user_rating_dict[i]) for i in user_doc_dict.keys()])
+    user_vectors = np.array([get_user_vector(corpus[user_doc_dict[i]], user_rating_dict[i])[0] for i in user_doc_dict.keys()])
     nearest_user_inds = content_based_recommend(user_vectors, user.reshape(1, -1), 10)
 
     # calculate average document rating for these users over the corpus, and pick top N
