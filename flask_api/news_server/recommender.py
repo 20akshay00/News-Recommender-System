@@ -29,7 +29,7 @@ def content_based_recommend(corpus, user, N):
     return nearest_indices[np.argsort(cosines[nearest_indices])][::-1]
 
 # calculate engagement score implicitly using time spent on the page by the user
-def get_engagement(time, num_words, click, mean = 445, var = 60):
+def get_engagement(time, num_words, click, mean = 247, var = 46):
     if click in [-1, 1]:
         return click
     else:
