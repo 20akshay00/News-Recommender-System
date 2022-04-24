@@ -102,4 +102,4 @@ dependencies:
   - zlib=1.2.11=vc14h1cdd9ab_1
   - pip:
     - textcleaner==0.4.26
-prefix: C:\Users\saksh\Documents\code-repo\Projects\News-Recommender-System\envs
+prefix: news_env
